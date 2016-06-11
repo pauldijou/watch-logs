@@ -1,0 +1,35 @@
+{
+  "name": "winston-viewer",
+  "version": "0.0.1",
+  "description": "Read Winston log files like a boss",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron main.js",
+    "log": "node test/logs/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pauldijou/watch-logs.git"
+  },
+  "keywords": [
+    "logs",
+    "log",
+    "viewer",
+    "watch"
+  ],
+  "author": "Paul Dijou",
+  "license": "Apache 2",
+  "bugs": {
+    "url": "https://github.com/pauldijou/watch-logs/issues"
+  },
+  "homepage": "https://github.com/pauldijou/watch-logs#readme",
+  "devDependencies": {
+    "devtron": "^1.2.0",
+    "electron-prebuilt": "^1.2.0",
+    "winston": "^2.2.0"
+  },
+  "dependencies": {
+    "chokidar": "^1.5.2",
+    "snabbdom": "^0.5.0"
+  }
+}
