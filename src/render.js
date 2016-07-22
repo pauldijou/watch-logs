@@ -1,7 +1,9 @@
+const { autorun, reaction } = require('mobx');
 const snabbdom = require('snabbdom');
 const patch = snabbdom.init([
   require('snabbdom/modules/class'),
   require('snabbdom/modules/props'),
+  require('snabbdom/modules/attributes'),
   require('snabbdom/modules/style'),
   require('snabbdom/modules/eventlisteners'),
 ]);
@@ -9,24 +11,23 @@ const patch = snabbdom.init([
 const h = require('snabbdom/h');
 const container = document.getElementById('view');
 
-const { get: getState, onUpdate } = require('./state');
+const { state, logs } = require('./state');
 const { render: renderHeader } = require('./render/header');
 const { render: renderLogs } = require('./render/logs');
 const { render: renderSettings } = require('./render/settings');
 
-let view = render(getState());
+let view = render();
 patch(container, view);
 
-onUpdate(state => {
-  const newView = render(state);
-  patch(view, newView);
-  view = newView;
+autorun('render', () => {
+  view = patch(view, render());
 });
 
-function render(state) {
+function render() {
+  console.log('RENDER', logs.get().length, JSON.parse(JSON.stringify(state)));
   return h('div#view', {}, [
-    renderHeader(state),
-    renderLogs(state),
-    renderSettings(state)
+    renderHeader(),
+    renderLogs(),
+    renderSettings()
   ]);
 }

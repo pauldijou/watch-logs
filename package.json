@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "chokidar": "^1.5.2",
+    "mobx": "^2.4.0",
     "snabbdom": "^0.5.0"
   }
 }

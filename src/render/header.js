@@ -1,16 +1,16 @@
 const h = require('snabbdom/h');
 const { dialog } = require('electron').remote;
-const { get: getState, updateFilters, updateSettings, updateUi } = require('../state');
-const { loadFiles } = require('../loader');
+const { state, updateFilters, updateUI } = require('../state');
+const { watch } = require('../watcher');
 
 const levels = [ 'debug', 'info', 'warn', 'error' ];
 
 function openSettings() {
-  updateUi({ settings: true });
+  updateUI({ settings: true });
 }
 
 function closeSettings() {
-  updateUi({ settings: false });
+  updateUI({ settings: false });
 }
 
 function showLoadFiles() {
@@ -18,8 +18,7 @@ function showLoadFiles() {
     properties: ['openFile', 'multiSelections']
   }, (filenames) => {
     if (!filenames) { return; }
-    updateSettings({ files: getState().settings.files.concat(filenames) });
-    loadFiles(filenames);
+    watch(filenames);
   });
 }
 
@@ -38,15 +37,14 @@ function updateTo(to) {
 function updateLevel(level) {
   return function doUpdateLevel(event) {
     if (event.target.checked) {
-      updateFilters({ levels: (getState().filters.levels || []).concat([level]) });
+      updateFilters({ levels: (state.filters.levels || []).concat([level]) });
     } else {
-      updateFilters({ levels: (getState().filters.levels || []).filter(l => l !== level) });
+      updateFilters({ levels: (state.filters.levels || []).filter(l => l !== level) });
     }
   }
 }
 
-
-function render(state) {
+function render() {
   return h('div#header', {}, [
     h('div', {}, [
       h('button.settings', { props: { type: 'button' }, on: { click: openSettings } }, [ 'Settings' ]),

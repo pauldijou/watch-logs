@@ -1,7 +1,8 @@
-const { get: getState } = require('./src/state');
-const { loadFiles } = require('./src/loader');
+const { state, logs, initFiles } = require('./src/state');
+const { init: initWatcher } = require('./src/watcher');
+const { init: initSpy } = require('./src/spy');
 
-const initState = getState();
-loadFiles(initState.settings.files);
+initSpy();
+initWatcher(initFiles);
 
 require('./src/render');

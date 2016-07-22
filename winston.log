@@ -1,18 +1,20 @@
-{"logger": "pg", "level":"info","message":"Hello distributed log files!","timestamp":"2016-06-09T11:43:58.148Z"}
-{"level":"info","message":"Hello again distributed logs","timestamp":"2016-06-09T11:43:58.150Z"}
-{"level":"warn","message":"Hello distributed log files!","timestamp":"2016-06-09T11:44:27.767Z"}
-{"logger": "pg", "meta":"toto","level":"error","message":"Hello again distributed logs","timestamp":"2016-06-09T11:44:27.769Z"}
-{"level":"info","message":"Hello distributed log files!","timestamp":"2016-06-09T11:44:53.312Z"}
-{"meta":"toto","aze":"aze","level":"info","message":"Hello again distributed logs","timestamp":"2016-06-09T11:44:53.314Z"}
-{"level":"info","message":"Hello distributed log files!","timestamp":"2016-06-09T11:49:07.277Z"}
-{"meta":"toto","aze":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-06-09T11:49:07.279Z"}
-{"level":"info","message":"Hello distributed log files!","timestamp":"2016-06-09T13:35:26.339Z"}
-{"meta":"toto","azaazee":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-06-09T13:35:26.341Z"}
-{"meta":"toto","azaazee":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-06-09T13:35:26.341Z"}
-{"level":"debug","message":"YOLazeazeO","timestamp":"2016-06-09T13:35:26.341Z"}
-{"logger": "pg", "level":"debug","message":"YOLO","timestamp":"2016-06-09T13:35:26.341Z"}
-{"level":"debug","message":"Y","timestamp":"2016-06-09T13:35:26.341Z"}
-{"level":"debug","message":"Y","timestamp":"2016-06-09T13:35:26.341Z"}
-{"level":"debug","message":"YOLO","timestamp":"2016-06-09T13:35:26.341Z"}
-{"level":"debug","message":"YOLO3","timestamp":"2016-06-09T13:35:26.341Z"}
-{"level":"debug","message":"YOLO4","timestamp":"2016-06-09T13:35:26.341Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
+{"payload":{"toto":[1,2],"a":true,"b":50,"z":{"y":"a"}},"level":"info","message":"Hello again distributed logs","timestamp":"2016-07-20T18:27:35.037Z"}
