@@ -2,7 +2,6 @@ const fs = require('fs');
 const chokidar = require('chokidar');
 const { when } = require('mobx');
 const { state, addFile, updateFile, removeFile, findFile, addLogs } = require('./state');
-const log = require('./log');
 
 const watcher = chokidar.watch([], {});
 

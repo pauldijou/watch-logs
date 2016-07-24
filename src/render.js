@@ -23,8 +23,12 @@ autorun('render', () => {
   view = patch(view, render());
 });
 
+document.addEventListener('render', function () {
+  view = patch(view, render());
+}, false);
+
 function render() {
-  console.log('RENDER', logs.get().length, JSON.parse(JSON.stringify(state)));
+  console.log('RENDER', state, JSON.parse(JSON.stringify(state)));
   return h('div#view', {}, [
     renderHeader(),
     renderLogs(),

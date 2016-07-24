@@ -1,13 +1,7 @@
 const h = require('snabbdom/h');
 const { state, logs } = require('../state');
-const { getClock, matchLogger, fullMatch, isOpen, toggle } = require('../log');
-
-const keys = [ '' ]
-
-function hexToRgba(hex, a) {
-  const num = parseInt(hex.slice(1), 16);
-  return `rgba(${num >> 16}, ${num >> 8 & 255}, ${num & 255}, ${a})`;
-}
+const { getClock, getStyle, getFileColor, isOpen, toggle } = require('../log');
+const { render: renderPayload } = require('../payload');
 
 function handleToggle(log) {
   return function doHandleToggle() {
@@ -15,18 +9,28 @@ function handleToggle(log) {
   }
 }
 
-function render() {
-  return h('ul#logs', {}, logs.get().filter(fullMatch(state.filters)).map(log => {
-    const style = state.loggers.reduce((acc, logger) => {
-      return acc || (matchLogger(logger.name)(log) && { color: logger.color, backgroundColor: hexToRgba(logger.bg, '0.5') })
-    }, false);
+function renderLog(log) {
+  const cells = [
+    h('td.level', {}, getClock(log)),
+    h('td.message', {}, [
+      h('div.content', { on: { click: handleToggle(log) } }, log.message),
+      h('div.payload', { style: { display: isOpen(log) ? 'block' : 'none' } }, renderPayload(log.payload))
+    ]),
+  ];
 
-    return h('li.log.' + (log.level || 'info'), { style: style || {}, on: { click: handleToggle(log) } }, [
-      h('div.level', {}, getClock(log)),
-      h('div.message', {}, log.message),
-      h('div.details', { style: { display: isOpen(log) ? 'block' : 'none' } }, 'YO')
-    ]);
-  }));
+  if (state.files.length > 1) {
+    cells.push(
+      h('td.file', {}, [
+        h('div', { style: { backgroundColor: getFileColor(log) } }, [])
+      ])
+    );
+  }
+
+  return h('tr.log.' + (log.level || 'info'), { style: getStyle(log) }, cells);
+}
+
+function render() {
+  return h('table#logs', {}, logs.get().map(renderLog));
 }
 
 module.exports = {

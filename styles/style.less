@@ -7,6 +7,7 @@
 html, body {
   margin: 0;
   padding: 0;
+  font-family: 'Share Tech Mono', monospace;
 }
 
 #header {
@@ -74,26 +75,22 @@ html, body {
 }
 
 #logs {
-  display: flex;
-  flex-direction: column;
   margin: 0;
   padding: 0;
-  margin-top: 160px;
+  margin-top: 170px;
+  width: 100%;
 }
 
 .log {
-  list-style: none;
-  display: flex;
-  align-items: stretch;
-  border-bottom: 1px solid #fff;
+
 }
+
 .log .level {
-  /*width: 10px;*/
   background-color: #ccc;
   color: white;
-  font-weight: bold;
-  min-width: 70px;
+  width: 120px;
   padding: 5px;
+  vertical-align: top;
 }
 
 .log.debug { background-color: rgba(142, 68, 173, 0.2); }
@@ -106,8 +103,20 @@ html, body {
 .log.error .level { background-color: #c0392b; }
 
 .log .message {
-  flex-grow: 1;
   padding: 5px 10px;
+}
+
+.log .file {
+  width: 15px;
+  padding: 5px;
+  vertical-align: top;
+}
+
+.log .file > div {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 3px solid white;
 }
 
 #settings {

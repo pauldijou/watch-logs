@@ -1,66 +1,92 @@
 const { action } = require('mobx');
-// const privateSymbol = Symbol('private');
-const privateSymbol = '__private__';
+const privateSymbol = Symbol('private');
+// const privateSymbol = '__private__';
 
-function init(files, loggers, file) {
-  const normalizer = normalize(files, loggers);
+const findFile = files => path => files.find(file => file.path === path);
+const findLogger = loggers => name => loggers.find(logger => logger.name === name);
+const findBestLogger = loggers => name => {
+  return loggers.reduce((best, logger) => {
+    if (name.indexOf(logger.name) === 0) {
+      return best && best.name > logger.name ? best : logger;
+    }
+    return best;
+  }, false);
+};
+
+function hexToRgba(hex, a) {
+  const num = parseInt(hex.slice(1), 16);
+  return `rgba(${num >> 16}, ${num >> 8 & 255}, ${num & 255}, ${a})`;
+}
+
+function not(predicate) {
+  return function (item) {
+    return !predicate(item);
+  };
+}
+
+function init(loggers, file) {
+  const normalizer = normalize(loggers);
 
   return function (log) {
     log[privateSymbol] = {
-      path: file.path,
+      file: file,
+      logger: null,
       date: Date.parse(log.timestamp),
       clock: log.timestamp.split('T')[1].slice(0, -1),
-      opened: false,
-      color: null,
-      bgColor: null,
-      enabled: true
+      opened: false
     };
 
     return normalizer(log);
   };
 }
 
-function normalize(files, loggers) {
+function normalize(loggers) {
+  const doFindLogger = findBestLogger(loggers);
+
   return function (log) {
-    if (log.logger && loggers[log.logger] !== undefined) {
-      log[privateSymbol].color = logger.color;
-      log[privateSymbol].bgColor = logger.bgColor;
-    } else {
-      log[privateSymbol].color = null;
-      log[privateSymbol].bgColor = null;
+    if (log.logger) {
+      log[privateSymbol].logger = doFindLogger(log.logger);
     }
     return log;
   };
 }
 
-// function bestLogger(loggers) {
-//
-//   return Object.
-//
-//   return function (log) {
-//     if (!log.logger) { return false; };
-//   };
-// }
-
+function compare(log1, log2) {
+  return log2[privateSymbol].date - log1[privateSymbol].date;
+}
 
 function getClock(log) {
   return log[privateSymbol].clock;
 }
 
-function getColor(log) {
-  return log[privateSymbol].color;
+function getFileColor(log) {
+  return log[privateSymbol].file.color;
 }
 
-function getBgColor(log) {
-  return log[privateSymbol].bgColor;
+function getStyle(log) {
+  if (log[privateSymbol].logger) {
+    return {
+      color: log[privateSymbol].logger.color,
+      backgroundColor: hexToRgba(log[privateSymbol].logger.bgColor, log[privateSymbol].logger.bgOpacity)
+    };
+  }
+  return {};
 }
 
-const toggle = action('toggleLog', (log) => {
+const renderEvent = new Event('render');
+
+const toggle = (log) => {
   log[privateSymbol].opened = !log[privateSymbol].opened;
-});
+  document.dispatchEvent(renderEvent);
+};
 
 function isOpen(log) {
   return log[privateSymbol].opened;
+}
+
+function isEnabled(log) {
+  return log[privateSymbol].file.enabled
+    && (!log[privateSymbol].logger || log[privateSymbol].logger.enabled);
 }
 
 const matchPath = path => log => {
@@ -106,7 +132,7 @@ function fullMatch(filters) {
   const isMatchMessage = filters.message ? matchMessage(filters.message) : () => true;
 
   return function isFullMatch(log) {
-    return log[privateSymbol].enabled
+    return isEnabled(log)
       && isMatchLevel(log)
       && isMatchPeriod(log)
       && isMatchTags(log)
@@ -116,13 +142,18 @@ function fullMatch(filters) {
 }
 
 module.exports = {
+  findFile,
+  findLogger,
+  not,
   init,
   normalize,
+  compare,
   toggle,
   isOpen,
+  isEnabled,
   getClock,
-  getColor,
-  getBgColor,
+  getFileColor,
+  getStyle,
   matchPath,
   matchPaths,
   matchLevel,

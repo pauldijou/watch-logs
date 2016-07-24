@@ -1,9 +1,10 @@
 const fs = require('fs');
-const { observable, extendObservable, computed, action, autorun, observe, useStrict } = require('mobx');
+const { observable, extendObservable, computed, action, autorun, observe, useStrict, asReference, asFlat } = require('mobx');
 
 useStrict(true);
 
-const { init: initLog, normalize, fullMatch, matchPath } = require('./log');
+const { findFile: doFindFile, findLogger: doFindLogger, not, init: initLog, normalize, compare, fullMatch, matchPath } = require('./log');
+const { init: initPayload } = require('./payload');
 
 function init(key, defaultValue) {
   try {
@@ -24,7 +25,7 @@ function save(key, value) {
 }
 
 const state = observable({
-  logs: [],
+  logs: asReference([]),
   files: init('files', []),
   filters: init('filters', {
     message: '',
@@ -38,31 +39,23 @@ const state = observable({
   ui: {
     settings: false,
     newLogger: '',
+    lastFocus: new Date()
   }
 });
 
 const logs = computed(() => state.logs.filter(fullMatch(state.filters)));
 
 function findFile(path) {
-  return state.files.find(file => file.path === path);
+  return doFindFile(state.files)(path);
 }
 
 function findLogger(name) {
-  return state.loggers.find(logger => logger.name === name);
+  return doFindLogger(state.loggers)(name);
 }
 
 const normalizeLogs = action('normalizeLogs', () => {
-  state.logs = state.logs.map(normalize(state.files, state.loggers));
-});
-
-observe(state.files, change => {
-  console.log('change files', change);
-  normalizeLogs();
-});
-
-observe(state.loggers, change => {
-  console.log('change loggers', change);
-  normalizeLogs();
+  console.log('Normalize', JSON.parse(JSON.stringify(state.files)), JSON.parse(JSON.stringify(state.loggers)));
+  state.logs = state.logs.map(normalize(state.loggers));
 });
 
 autorun('saveFiles', () => save('files', state.files));
@@ -71,7 +64,11 @@ autorun('saveLoggers', () => save('loggers', state.loggers));
 
 const addLogs = action('addLogs', (path, logs) => {
   const file = findFile(path);
-  state.logs = (logs.map(initLog(state.files, state.loggers, file))).concat(state.logs.slice());
+  if (file === undefined) { console.warn('Adding logs from an unexisting file'); return; }
+  state.logs = logs.map(log => {
+    if (log.payload) { log.payload = initPayload(log.payload) };
+    return initLog(state.loggers, file)(log);
+  }).sort(compare).concat(state.logs.slice());
 });
 
 const addFile = path => {
@@ -79,36 +76,47 @@ const addFile = path => {
     if (err) { console.warn('Failed to add file'); console.error(err); return; }
     const file = findFile(path);
     if (file !== undefined) { console.warn('Adding an already existing file', path); return; }
-    state.files.push({
+    state.files = state.files.concat([{
       path: path,
       enabled: true,
       lastModified: stats.mtime,
-      readUntil: 0
-    });
+      readUntil: 0,
+      color: '#00000'
+    }]);
   }));
 };
 
 const updateFile = action('updateFile', (path, patch) => {
-  const file = findFile(path);
-  if (file === undefined) { console.warn('Updating unexisting file', path, patch); return; }
-  Object.assign(file, patch);
+  if (findFile(path) === undefined) { console.warn('Updating unexisting file', path, patch); return; }
+  state.files = state.files.map(file => file.path === path ? Object.assign(file, patch) : file);
 });
 
 const removeFile = action('removeFile', path => {
   const file = findFile(path);
   if (file === undefined) { console.warn('Removing unexisting file', path); return; }
-  state.logs = state.logs.filter(matchPath(path));
+  file.removed = true;
+  state.logs = state.logs.filter(not(matchPath(path)));
   state.files = state.files.filter(f => f.path !== path);
 });
 
-const resetFile = action('resetFile', path => {
-  const file = findFile(path);
-  if (file === undefined) { console.warn('Reseting unexisting file', path); return; }
-  state.logs = state.logs.filter(matchPath(path));
-  file.readUntil = 0;
-  file.lastModified = new Date();
-  // TODO : clear file
+const postClearFile = action('clearFile', file => {
+  state.logs = state.logs.filter(not(matchPath(file.path)));
+  updateFile(file.path, { readUntil: 0, lastModified: new Date() });
 });
+
+const clearFile = path => {
+  const file = findFile(path);
+  if (file === undefined) { console.warn('Clearing unexisting file', path); return; }
+
+  fs.open(path, 'w', (err) => {
+    if (err) {
+      console.warn('Failed to clear file', path);
+      console.error(e);
+      return;
+    }
+    postClearFile(file);
+  });
+};
 
 const updateFilters = action('updateFilters', (patch) => {
   state.filters = Object.assign({}, state.filters, patch);
@@ -117,19 +125,20 @@ const updateFilters = action('updateFilters', (patch) => {
 const addLogger = action('addLogger', (newLogger) => {
   const logger = findLogger(newLogger.name);
   if (logger !== undefined) { console.warn('Adding an already existing logger', newLogger); return; }
-  state.loggers.push(newLogger);
+  state.loggers = state.loggers.concat([newLogger]);
+  normalizeLogs();
 });
 
 const updateLogger = action('updateLogger', (name, patch) => {
-  const logger = findLogger(name);
-  if (logger === undefined) { console.warn('Updating unexisting logger', name, patch); return; }
-  Object.assign(logger, patch);
+  if (findLogger(name) === undefined) { console.warn('Updating unexisting logger', name, patch); return; }
+  state.loggers = state.loggers.map(logger => logger.name === name ? Object.assign(logger, patch) : logger);
 });
 
 const removeLogger = action('removeLogger', (name) => {
   const logger = findLogger(name);
   if (logger === undefined) { console.warn('Removing unexisting logger', name); return; }
   state.loggers = state.loggers.filter(l => l.name !== name);
+  normalizeLogs();
 });
 
 const updateUI = action('updateUI', (patch) => {
@@ -144,6 +153,8 @@ module.exports = {
   addLogs,
   addFile,
   updateFile,
+  removeFile,
+  clearFile,
   updateFilters,
   addLogger,
   updateLogger,

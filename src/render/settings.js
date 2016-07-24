@@ -1,62 +1,93 @@
 const h = require('snabbdom/h');
-const { state, updateUI, addLogger, updateLogger } = require('../state');
-const { unwatch } = require('../watcher');
+const { dialog } = require('electron').remote;
+const { state, updateUI, addLogger, updateLogger, removeLogger, updateFile, clearFile } = require('../state');
+const { watch, unwatch } = require('../watcher');
 
 function closeSettings() {
   updateUI({ settings: false });
 }
 
-const submitNewLogger = state => event => {
+const submitNewLogger = event => {
   event.preventDefault();
-  addLogger({ name: state.ui.newLogger, color: '#000000', bgColor: '#ffffff', enabled: true });
+  addLogger({ name: state.ui.newLogger, color: '#000000', bgColor: '#ffffff', bgOpacity: 1, enabled: true });
   updateUI({ newLogger: '' });
 }
 
-function updateNewLogger(event) {
+const updateNewLogger = event => {
   updateUI({ newLogger: event.target.value });
+};
+
+const updateLoggerColor = logger => event => {
+  updateLogger(logger.name, { color: event.target.value });
+};
+
+const updateLoggerBgColor = logger => event => {
+  updateLogger(logger.name, { bgColor: event.target.value });
+};
+
+const updateLoggerBgOpacity = logger => event => {
+  updateLogger(logger.name, { bgOpacity: event.target.value });
+};
+
+const updateLoggerEnabled = logger => event => {
+  updateLogger(logger.name, { enabled: event.target.checked });
+};
+
+const doRemoveLogger = logger => event => {
+  removeLogger(logger.name);
 }
 
-function updateLoggerColor(logger) {
-  return function doUpdateLoggeColor(event) {
-    updateLogger(logger.name, { color: event.target.value });
-  }
+function showLoadFiles() {
+  dialog.showOpenDialog({
+    properties: ['openFile', 'multiSelections']
+  }, (filenames) => {
+    if (!filenames) { return; }
+    watch(filenames);
+  });
 }
 
-function updateLoggerBgColor(logger) {
-  return function doUpdateLoggerBgColor(event) {
-    updateLogger(logger.name, { bgColor: event.target.value });
-  }
-}
+const updateFileEnabled = file => event => {
+  updateFile(file.path, { enabled: event.target.checked });
+};
 
-function updateLoggerEnabled(logger) {
-  return function doUpdateLoggerEnabled(event) {
-    updateLogger(logger.name, { enabled: event.target.checked });
-  }
-}
+const updateFileColor = file => event => {
+  updateFile(file.path, { color: event.target.value });
+};
 
-function removeFile(file) {
-  return function doRemoveFile() {
-    unwatch([file.path]);
-  };
-}
+const removeFile = file => () => {
+  unwatch([file.path]);
+};
+
+const doClearFile = file => () => {
+  clearFile(file.path);
+};
 
 function render() {
   return h('div#settings', { class: { opened: !!state.ui.settings } }, [
     h('div.mask', { on: { click: closeSettings } }, []),
     h('div.content', {}, [
-      h('h3', {}, 'Loggers'),
-      h('form', { on: { submit: submitNewLogger(state) } }, [
-        h('input', { attrs: { type: 'text', value: state.ui.newLogger || '' }, on: { input: updateNewLogger } }),
-        h('button', { attrs: { type: 'submit' }, style: { display: 'none' } }, [])
-      ]),
-      h('ul', {}, state.loggers.map(logger => h('li', {}, [
-        h('input', { attrs: { type: 'checkbox', checked: logger.enabled }, on: { change: updateLoggerEnabled(logger) } }, []),
-        h('input', { attrs: { type: 'color', value: logger.color || '' }, on: { change: updateLoggerColor(logger) } }),
-        h('input', { attrs: { type: 'color', value: logger.bgColor || '' }, on: { change: updateLoggerBgColor(logger) } }),
-        h('span', {}, logger.name),
-      ]))),
       h('h3', {}, 'Watched files'),
-      h('ul', {}, state.files.map(file => h('li', { on: { click: removeFile(file) } }, file.path)))
+      h('button', { attrs: { type: 'button' }, on: { click: showLoadFiles } }, 'Load'),
+      h('ul.files', {}, state.files.map(file => h('li', {}, [
+        h('input', { attrs: { type: 'checkbox', checked: file.enabled }, on: { change: updateFileEnabled(file) } }, []),
+        h('input', { attrs: { type: 'color', value: file.color || '' }, on: { change: updateFileColor(file) } }, []),
+        h('span', {}, file.path),
+        h('button', { attrs: { type: 'button' }, on: { click: doClearFile(file) } }, 'Clear'),
+        h('button', { attrs: { type: 'button' }, on: { click: removeFile(file) } }, 'Remove'),
+      ]))),
+      h('h3', {}, 'Loggers'),
+      h('form', { on: { submit: submitNewLogger } }, [
+        h('input', { attrs: { type: 'text', value: state.ui.newLogger || '' }, on: { input: updateNewLogger } }),
+        h('button', { attrs: { type: 'submit' } }, 'Add ' + state.ui.newLogger)
+      ]),
+      h('ul.loggers', {}, state.loggers.map(logger => h('li', {}, [
+        h('input', { attrs: { type: 'checkbox', checked: logger.enabled }, on: { change: updateLoggerEnabled(logger) } }, []),
+        h('input', { attrs: { type: 'color', value: logger.color || '' }, on: { change: updateLoggerColor(logger) } }, []),
+        h('input', { attrs: { type: 'color', value: logger.bgColor || '' }, on: { change: updateLoggerBgColor(logger) } }, []),
+        h('input', { attrs: { type: 'range', value: logger.bgOpacity || 1, min: 0, max: 1, step: 0.1 }, on: { change: updateLoggerBgOpacity(logger) } }, []),
+        h('span', {}, logger.name),
+        h('button', { attrs: { type: 'button' }, on: { click: doRemoveLogger(logger) } }, 'Remove')
+      ]))),
     ])
   ]);
 }
