@@ -4,9 +4,10 @@
   "description": "Read Winston log files like a boss",
   "main": "main.js",
   "scripts": {
-    "start": "electron main.js",
-    "run": "electron main.js",
-    "style": "",
+    "start": "npm run app | npm run styles",
+    "app": "electron main.js",
+    "less-dev": "lessc styles/styles.less styles.css --source-map --strict-math=on",
+    "styles": "chokidar 'styles/*.less' -c 'npm run less-dev'",
     "log": "node test/logs/index.js"
   },
   "repository": {
@@ -26,13 +27,14 @@
   },
   "homepage": "https://github.com/pauldijou/watch-logs#readme",
   "devDependencies": {
+    "chokidar-cli": "^1.2.0",
     "devtron": "^1.2.0",
     "electron-prebuilt": "^1.2.0",
+    "less": "^2.7.1",
     "winston": "^2.2.0"
   },
   "dependencies": {
     "chokidar": "^1.5.2",
-    "less": "^2.7.1",
     "mobx": "^2.4.0",
     "snabbdom": "^0.5.0"
   }

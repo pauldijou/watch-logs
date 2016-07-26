@@ -3,7 +3,7 @@ const { observable, extendObservable, computed, action, autorun, observe, useStr
 
 useStrict(true);
 
-const { findFile: doFindFile, findLogger: doFindLogger, not, init: initLog, normalize, compare, fullMatch, matchPath } = require('./log');
+const { findFile: doFindFile, findLogger: doFindLogger, not, init: initLog, normalizeLoggers, normalizeSettings, compare, fullMatch, matchPath } = require('./log');
 const { init: initPayload } = require('./payload');
 
 function init(key, defaultValue) {
@@ -25,7 +25,8 @@ function save(key, value) {
 }
 
 const state = observable({
-  logs: asReference([]),
+  logs: asFlat([]),
+  // logs: asReference([]),
   files: init('files', []),
   filters: init('filters', {
     message: '',
@@ -36,6 +37,11 @@ const state = observable({
     tags: []
   }),
   loggers: init('loggers', []),
+  settings: init('settings', {
+    payloadKey: '',
+    payloadParse: false,
+    timestampKey: ''
+  }),
   ui: {
     settings: false,
     newLogger: '',
@@ -53,21 +59,26 @@ function findLogger(name) {
   return doFindLogger(state.loggers)(name);
 }
 
-const normalizeLogs = action('normalizeLogs', () => {
-  console.log('Normalize', JSON.parse(JSON.stringify(state.files)), JSON.parse(JSON.stringify(state.loggers)));
-  state.logs = state.logs.map(normalize(state.loggers));
+const doNormalizeLoggers = action('normalizeLoggers', () => {
+  console.log('Normalize loggers', JSON.parse(JSON.stringify(state.loggers)));
+  state.logs = state.logs.map(normalizeLoggers(state.loggers));
+});
+
+const doNormalizeSettings = action('normalizeSettings', () => {
+  console.log('Normalize settings', JSON.parse(JSON.stringify(state.settings)));
+  state.logs = state.logs.map(normalizeSettings(state.settings, initPayload));
 });
 
 autorun('saveFiles', () => save('files', state.files));
 autorun('saveFilters', () => save('filters', state.filters));
 autorun('saveLoggers', () => save('loggers', state.loggers));
+autorun('saveSettings', () => save('settings', state.settings));
 
 const addLogs = action('addLogs', (path, logs) => {
   const file = findFile(path);
   if (file === undefined) { console.warn('Adding logs from an unexisting file'); return; }
   state.logs = logs.map(log => {
-    if (log.payload) { log.payload = initPayload(log.payload) };
-    return initLog(state.loggers, file)(log);
+    return initLog(state.loggers, state.settings, initPayload, file)(log);
   }).sort(compare).concat(state.logs.slice());
 });
 
@@ -94,7 +105,6 @@ const updateFile = action('updateFile', (path, patch) => {
 const removeFile = action('removeFile', path => {
   const file = findFile(path);
   if (file === undefined) { console.warn('Removing unexisting file', path); return; }
-  file.removed = true;
   state.logs = state.logs.filter(not(matchPath(path)));
   state.files = state.files.filter(f => f.path !== path);
 });
@@ -126,7 +136,7 @@ const addLogger = action('addLogger', (newLogger) => {
   const logger = findLogger(newLogger.name);
   if (logger !== undefined) { console.warn('Adding an already existing logger', newLogger); return; }
   state.loggers = state.loggers.concat([newLogger]);
-  normalizeLogs();
+  doNormalizeLoggers();
 });
 
 const updateLogger = action('updateLogger', (name, patch) => {
@@ -138,11 +148,16 @@ const removeLogger = action('removeLogger', (name) => {
   const logger = findLogger(name);
   if (logger === undefined) { console.warn('Removing unexisting logger', name); return; }
   state.loggers = state.loggers.filter(l => l.name !== name);
-  normalizeLogs();
+  doNormalizeLoggers();
 });
 
 const updateUI = action('updateUI', (patch) => {
-  state.ui = Object.assign(state.ui, patch);
+  Object.assign(state.ui, patch);
+});
+
+const updateSettings = action('updateSettings', (patch) => {
+  Object.assign(state.settings, patch);
+  doNormalizeSettings();
 });
 
 module.exports = {
@@ -159,5 +174,6 @@ module.exports = {
   addLogger,
   updateLogger,
   removeLogger,
-  updateUI
+  updateUI,
+  updateSettings,
 };

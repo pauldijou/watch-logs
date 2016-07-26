@@ -24,23 +24,30 @@ function not(predicate) {
   };
 }
 
-function init(loggers, file) {
-  const normalizer = normalize(loggers);
+function pad(num) {
+  return num < 10 ? '0' + num : num;
+}
 
-  return function (log) {
+function pad2(num) {
+  return num < 10 ? '00' + num : (num < 100 ? '0' + num : num);
+}
+
+function init(loggers, settings, initPayload, file) {
+  const normalizerLoggers = normalizeLoggers(loggers);
+  const normalizerSettings = normalizeSettings(settings, initPayload);
+
+  return function doInit(log) {
     log[privateSymbol] = {
       file: file,
       logger: null,
-      date: Date.parse(log.timestamp),
-      clock: log.timestamp.split('T')[1].slice(0, -1),
-      opened: false
+      opened: false,
     };
 
-    return normalizer(log);
+    return normalizerSettings(normalizerLoggers(log));
   };
 }
 
-function normalize(loggers) {
+function normalizeLoggers(loggers) {
   const doFindLogger = findBestLogger(loggers);
 
   return function (log) {
@@ -51,12 +58,67 @@ function normalize(loggers) {
   };
 }
 
+function normalizeSettings(settings, initPayload) {
+  return function (log) {
+    log[privateSymbol].payload = settings.payloadKey ? log[settings.payloadKey] : log.payload;
+
+    try {
+      log[privateSymbol].date = new Date(settings.timestampKey ? log[settings.timestampKey] : log.timestamp || log.time);
+      if (settings.payloadParse && typeof log[privateSymbol].payload === 'string') {
+        log[privateSymbol].payload = JSON.parse(log[privateSymbol].payload);
+      }
+    } catch (e) {
+      console.warn('Failed to normalize log', log, log[privateSymbol]);
+      console.error(e);
+
+    }
+
+    if (log[privateSymbol].payload) {
+      log[privateSymbol].payload = initPayload(log[privateSymbol].payload);
+    }
+
+    if (isNaN(log[privateSymbol].date.valueOf())) {
+      log[privateSymbol].date = new Date();
+      log[privateSymbol].clock = 'Invalid date';
+      log[privateSymbol].fullClock = 'Invalid date';
+    } else {
+      log[privateSymbol].clock = '' +
+        pad(log[privateSymbol].date.getHours()) +
+        ':' +
+        pad(log[privateSymbol].date.getMinutes()) +
+        ':' +
+        pad(log[privateSymbol].date.getSeconds()) +
+        '.' +
+        pad2(log[privateSymbol].date.getMilliseconds());
+
+      log[privateSymbol].fullClock = '' +
+        log[privateSymbol].date.getFullYear() +
+        '-' +
+        pad(1 + log[privateSymbol].date.getMonth()) +
+        '-' +
+        pad(log[privateSymbol].date.getDate()) +
+        ' ' +
+        log[privateSymbol].clock;
+    }
+
+    return log;
+  }
+}
+
 function compare(log1, log2) {
   return log2[privateSymbol].date - log1[privateSymbol].date;
 }
 
 function getClock(log) {
   return log[privateSymbol].clock;
+}
+
+function getFullClock(log) {
+  return log[privateSymbol].fullClock;
+}
+
+function getPayload(log) {
+  return log[privateSymbol].payload;
 }
 
 function getFileColor(log) {
@@ -90,11 +152,11 @@ function isEnabled(log) {
 }
 
 const matchPath = path => log => {
-  return log[privateSymbol].path === path;
+  return log[privateSymbol].file.path === path;
 };
 
 const matchPaths = paths => log => {
-  return paths.indexOf(log[privateSymbol].path) >= 0;
+  return paths.indexOf(log[privateSymbol].file.path) >= 0;
 };
 
 const matchLevel = level => log => {
@@ -146,12 +208,15 @@ module.exports = {
   findLogger,
   not,
   init,
-  normalize,
+  normalizeLoggers,
+  normalizeSettings,
   compare,
   toggle,
   isOpen,
   isEnabled,
   getClock,
+  getFullClock,
+  getPayload,
   getFileColor,
   getStyle,
   matchPath,

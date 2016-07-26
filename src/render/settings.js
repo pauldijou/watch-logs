@@ -1,11 +1,23 @@
 const h = require('snabbdom/h');
 const { dialog } = require('electron').remote;
-const { state, updateUI, addLogger, updateLogger, removeLogger, updateFile, clearFile } = require('../state');
+const { state, updateUI, updateSettings, addLogger, updateLogger, removeLogger, updateFile, clearFile } = require('../state');
 const { watch, unwatch } = require('../watcher');
 
 function closeSettings() {
   updateUI({ settings: false });
 }
+
+const updatePayloadKey = event => {
+  updateSettings({ payloadKey: event.target.value });
+};
+
+const updatePayloadParse = event => {
+  updateSettings({ payloadParse: event.target.checked });
+};
+
+const updateTimestampKey = event => {
+  updateSettings({ timestampKey: event.target.value });
+};
 
 const submitNewLogger = event => {
   event.preventDefault();
@@ -66,6 +78,19 @@ function render() {
   return h('div#settings', { class: { opened: !!state.ui.settings } }, [
     h('div.mask', { on: { click: closeSettings } }, []),
     h('div.content', {}, [
+      h('h3', {}, 'Settings'),
+      h('div', {}, [
+        h('label', {}, 'Payload key'),
+        h('input', { attrs: { type: 'text', value: state.settings.payloadKey }, on: { change: updatePayloadKey } }, []),
+      ]),
+      h('div', {}, [
+        h('label', {}, 'Payload parsing'),
+        h('input', { attrs: { type: 'checkbox', checked: state.settings.payloadParse }, on: { change: updatePayloadParse } }, []),
+      ]),
+      h('div', {}, [
+        h('label', {}, 'Timestamp key'),
+        h('input', { attrs: { type: 'text', value: state.settings.timestampKey }, on: { change: updateTimestampKey } }, []),
+      ]),
       h('h3', {}, 'Watched files'),
       h('button', { attrs: { type: 'button' }, on: { click: showLoadFiles } }, 'Load'),
       h('ul.files', {}, state.files.map(file => h('li', {}, [
