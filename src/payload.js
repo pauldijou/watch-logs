@@ -20,6 +20,20 @@ function init(payload) {
   return payload;
 }
 
+function close(payload) {
+  switch (getType(payload)) {
+    case 'Object':
+      payload[private].collapsed = true;
+      payload[private].keys.forEach(key => close(payload[key]));
+      break;
+    case 'Array':
+      payload[private].collapsed = true;
+      payload.forEach(close);
+      break
+  }
+  return payload;
+}
+
 const renderEvent = new Event('render');
 
 const doToggle = action('togglePayload', (item) => {
@@ -83,7 +97,7 @@ function renderBoolean(bool, key) {
   ];
 }
 
-
+// Return array[dom]
 function renderAny(value, key = 'payload') {
   switch (getType(value)) {
     case 'Object': return [renderObject(value, key)]; break;
@@ -96,6 +110,7 @@ function renderAny(value, key = 'payload') {
   }
 }
 
+// Return array[dom]
 function render(payload) {
   switch (getType(payload)) {
     case 'Object': return [ h('ul', {}, renderObjectKeys(payload)) ]; break;
@@ -110,5 +125,6 @@ function render(payload) {
 
 module.exports = {
   init: init,
+  close: close,
   render: render,
 };

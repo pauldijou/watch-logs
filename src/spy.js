@@ -2,7 +2,7 @@ const { spy } = require('mobx');
 const { state } = require('./state');
 
 function print(event) {
-  // console.log(event);
+  console.log(event);
 }
 
 function init() {

@@ -3,7 +3,11 @@ const chokidar = require('chokidar');
 const { when } = require('mobx');
 const { state, addFile, updateFile, removeFile, findFile, addLogs } = require('./state');
 
-const watcher = chokidar.watch([], {});
+const watcher = chokidar.watch([], {
+  awaitWriteFinish: {
+    stabilityThreshold: 500 // TODO : should be configurable
+  }
+});
 
 watcher.on('add', (path, stats) => {
   const file = findFile(path);

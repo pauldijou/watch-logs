@@ -4,10 +4,10 @@
   "description": "Read Winston log files like a boss",
   "main": "main.js",
   "scripts": {
-    "start": "npm run app | npm run styles",
+    "start": "npm run app  | npm run styles",
     "app": "electron main.js",
     "less-dev": "lessc styles/styles.less styles.css --source-map --strict-math=on",
-    "styles": "chokidar 'styles/*.less' -c 'npm run less-dev'",
+    "styles": "npm run less-dev && chokidar 'styles/*.less' -c 'npm run less-dev'",
     "log": "node test/logs/index.js"
   },
   "repository": {

@@ -1,11 +1,12 @@
 const h = require('snabbdom/h');
 const { state, logs } = require('../state');
 const { getClock, getFullClock, getPayload, getStyle, getFileColor, isOpen, toggle } = require('../log');
-const { render: renderPayload } = require('../payload');
+const { render: renderPayload, close: closePayload } = require('../payload');
 
 function handleToggle(log) {
   return function doHandleToggle() {
     toggle(log);
+    closePayload(getPayload(log));
   }
 }
 

@@ -3,7 +3,7 @@ const { state, logs, updateUI } = require('./src/state');
 const { init: initWatcher } = require('./src/watcher');
 const { init: initSpy } = require('./src/spy');
 
-initSpy();
+// initSpy();
 initWatcher();
 
 require('./src/render');
