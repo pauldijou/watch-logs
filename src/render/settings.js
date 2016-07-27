@@ -19,6 +19,10 @@ const updateTimestampKey = event => {
   updateSettings({ timestampKey: event.target.value });
 };
 
+const updateUserKey = event => {
+  updateSettings({ userKey: event.target.value });
+};
+
 const submitNewLogger = event => {
   event.preventDefault();
   addLogger({ name: state.ui.newLogger, color: '#000000', bgColor: '#ffffff', bgOpacity: 1, enabled: true });
@@ -90,6 +94,10 @@ function render() {
       h('div', {}, [
         h('label', {}, 'Timestamp key'),
         h('input', { attrs: { type: 'text', value: state.settings.timestampKey }, on: { change: updateTimestampKey } }, []),
+      ]),
+      h('div', {}, [
+        h('label', {}, 'User key'),
+        h('input', { attrs: { type: 'text', value: state.settings.userKey }, on: { change: updateUserKey } }, []),
       ]),
       h('h3', {}, 'Watched files'),
       h('button', { attrs: { type: 'button' }, on: { click: showLoadFiles } }, 'Load'),

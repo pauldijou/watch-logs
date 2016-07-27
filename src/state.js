@@ -40,7 +40,8 @@ const state = observable({
   settings: init('settings', {
     payloadKey: '',
     payloadParse: false,
-    timestampKey: ''
+    timestampKey: '',
+    userKey: ''
   }),
   ui: {
     settings: false,
