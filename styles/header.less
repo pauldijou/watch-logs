@@ -5,14 +5,30 @@
   right: 0;
   background-color: #2c3e50;
   color: white;
+  z-index: 10;
 
   h1 {
     font-size: 24px;
     margin-left: 5px;
   }
 
-  .load, .settings {
-    float: right;
+  .actions {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    flex-direction: row;
+
+   .action {
+     display: block;
+      width: 20px;
+      height: 20px;
+      background: white;
+      color: #2c3e50;
+      border: none;
+      margin-right: 10px;
+      cursor: pointer;
+    }
   }
 
   .message {
@@ -49,6 +65,11 @@
     left: 0;
     background-color: #2c3e50;
     min-width: 100px;
+
+    &.is-right {
+      left: auto;
+      right: 0;
+    }
   }
 
   .dropdown:hover .dropdown-content {

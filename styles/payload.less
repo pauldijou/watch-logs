@@ -2,6 +2,12 @@
   ul {
     list-style: none;
     padding-left: 20px;
+
+  }
+
+  > ul {
+    padding-left: 0;
+    margin: 5px 0;
   }
 
   .payload-key {
@@ -16,5 +22,41 @@
   .payload-number,
   .payload-date {
     color: red;
+  }
+
+  .payload-object,
+  .payload-array {
+    position: relative;
+  }
+
+  .payload-key.click-me::before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    top: 4px;
+    left: 0;
+    border-color: transparent;
+    border-style: solid;
+
+  }
+
+  .payload-key.click-me.collapsed::before {
+    border-left-color: blue;
+    width: 20px;
+
+    border-left-width: 10px;
+    border-right-width: 10px;
+    border-top-width: 5px;
+    border-bottom-width: 5px;
+  }
+
+  .payload-key.click-me.expanded::before {
+    border-top-color: blue;
+    width: 10px;
+    height: 20px;
+    border-left-width: 5px;
+    border-right-width: 5px;
+    border-top-width: 10px;
+    border-bottom-width: 10px;
   }
 }

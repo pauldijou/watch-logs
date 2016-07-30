@@ -58,10 +58,16 @@ function updateLevel(level) {
 
 function render() {
   return h('div#header', {}, [
-    h('div', {}, [
-      h('button.settings', { attrs: { type: 'button' }, on: { click: openSettings } }, [ 'Settings' ]),
-      h('button.load', { attrs : { type: 'button' }, on: { click: showLoadFiles } }, [ 'Load' ]),
-      h('h1', {}, 'Watch Logs'),
+    h('h1', {}, 'Watch Logs'),
+    h('div.actions', {}, [
+      h('button.action.load', { attrs : { type: 'button' }, on: { click: showLoadFiles } }, [ 'L' ]),
+      h('button.action.settings', { attrs: { type: 'button' }, on: { click: openSettings } }, [ 'S' ]),
+      h('div.clear.dropdown', {}, [
+        h('div.action', {}, 'C'),
+        h('div.dropdown-content.is-right', {}, state.files.map(f => {
+          return h('div', {}, f.name);
+        })),
+      ]),
     ]),
     h('div.message', {}, [
       h('input', { attrs: { type: 'text', value: state.filters.message || '' }, on: { input: updateMessage } }, [])
@@ -79,7 +85,7 @@ function render() {
               attrs: { type: 'checkbox', checked: f.enabled },
               on: { change: toggleFile(f) }
             }, []),
-            h('span', { attrs: { title: f.path } }, f.path.split('/').splice(-2).join('/'))
+            h('span', { attrs: { title: f.path } }, f.name)
           ])
         ))
       ]),

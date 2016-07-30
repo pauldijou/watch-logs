@@ -43,12 +43,16 @@ const doToggle = action('togglePayload', (item) => {
 
 const toggle = (item) => () => doToggle(item);
 
-function renderKey(key) {
-  return h('span.payload-key', {}, key + ': ');
+function renderKey(key, collapsed) {
+  return h('span.payload-key', { class: {
+    'click-me': (collapsed !== undefined),
+    'collapsed': (collapsed === true),
+    'expanded': (collapsed === false),
+  } }, key + ': ');
 }
 
-function renderFullKey(key, type, type2, size) {
-  return h('span.payload-key.click-me', {}, key + ': ' + type + ' ' + size + ' ' + type2 + (size > 1 ? 's' : ''));
+function renderFullKey(key, type, type2, size, collapsed) {
+  return renderKey(key + ': ' + type + ' ' + size + ' ' + type2 + (size > 1 ? 's' : ''), collapsed);
 }
 
 function renderObjectKeys(obj) {
@@ -57,7 +61,7 @@ function renderObjectKeys(obj) {
 
 function renderObject(obj, key) {
   const children = obj[private].collapsed ? [] : renderObjectKeys(obj);
-  return h('ul.payload-object', {}, [ h('li', { on: { click: toggle(obj) } }, [ renderFullKey(key, '{}', 'key', obj[private].keys.length) ]) ].concat(children));
+  return h('ul.payload-object', {}, [ h('li',{ on: { click: toggle(obj) } }, [ renderFullKey(key, '{}', 'key', obj[private].keys.length, obj[private].collapsed) ]) ].concat(children));
 }
 
 function renderArrayChildren(arr) {
@@ -66,7 +70,7 @@ function renderArrayChildren(arr) {
 
 function renderArray(arr, key) {
   const children = arr[private].collapsed ? [] : renderArrayChildren(arr);
-  return h('ul.payload-array', {}, [ h('li', { on: { click: toggle(arr) } }, [ renderFullKey(key, '[]', 'item', arr.length) ]) ].concat(children));
+  return h('ul.payload-array', {}, [ h('li', { on: { click: toggle(arr) } }, [ renderFullKey(key, '[]', 'item', arr.length, arr[private].collapsed) ]) ].concat(children));
 }
 
 function renderDate(date, key) {

@@ -24,10 +24,15 @@ function save(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function normalizeFile(file) {
+  file.name = file.path.split('/').slice(-2).join('/');
+  return file;
+}
+
 const state = observable({
   logs: asFlat([]),
   // logs: asReference([]),
-  files: init('files', []),
+  files: init('files', []).map(normalizeFile),
   filters: init('filters', {
     message: '',
     logger: '',
@@ -88,13 +93,13 @@ const addFile = path => {
     if (err) { console.warn('Failed to add file'); console.error(err); return; }
     const file = findFile(path);
     if (file !== undefined) { console.warn('Adding an already existing file', path); return; }
-    state.files = state.files.concat([{
+    state.files = state.files.concat([normalizeFile({
       path: path,
       enabled: true,
       lastModified: stats.mtime,
       readUntil: 0,
       color: '#00000'
-    }]);
+    })]);
   }));
 };
 
