@@ -1,9 +1,8 @@
 const h = require('snabbdom/h');
 const { dialog } = require('electron').remote;
-const { state, updateFile, updateLogger, updateFilters, updateUI } = require('../state');
+const { by, findDuration } = require('../utils');
+const { state, updateFile, updateLogger, updateLevel, updateFilters, updateUI } = require('../state');
 const { watch } = require('../watcher');
-
-const levels = [ 'debug', 'info', 'warn', 'error' ];
 
 function openSettings() {
   updateUI({ settings: true });
@@ -22,16 +21,18 @@ function showLoadFiles() {
   });
 }
 
-function updateMessage(event) {
+function updateFiltersMessage(event) {
   updateFilters({ message: event.target.value });
 }
 
-function updateFrom(from) {
-  console.log('FROM', from.target.value);
+function updateFiltersLogger(event) {
+  updateFilters({ logger: event.target.value });
 }
 
-function updateTo(to) {
-  console.log('TO', to);
+function updateDuration(duration) {
+  return function doUpdateDuration() {
+    updateFilters({ duration: duration.key });
+  }
 }
 
 function toggleFile(file) {
@@ -46,17 +47,17 @@ function toggleLogger(logger) {
   }
 }
 
-function updateLevel(level) {
-  return function doUpdateLevel(event) {
-    if (event.target.checked) {
-      updateFilters({ levels: (state.filters.levels || []).concat([level]) });
-    } else {
-      updateFilters({ levels: (state.filters.levels || []).filter(l => l !== level) });
-    }
-  }
+const toggleLevel = level => event => {
+  updateLevel(level.name, { enabled: !level.enabled });
+};
+
+function updateUser(event) {
+  updateFilters({ user: event.target.value });
 }
 
 function render() {
+  const duration = findDuration(state.filters.duration);
+
   return h('div#header', {}, [
     h('h1', {}, 'Watch Logs'),
     h('div.actions', {}, [
@@ -70,19 +71,23 @@ function render() {
       ]),
     ]),
     h('div.message', {}, [
-      h('input', { attrs: { type: 'text', value: state.filters.message || '' }, on: { input: updateMessage } }, [])
+      h('input', { attrs: { type: 'text', placeholder: 'Message' }, props: { value: state.filters.message || '' }, on: { input: updateFiltersMessage } }, []),
+      h('input', { attrs: { type: 'text', placeholder: 'Logger' }, props: { value: state.filters.logger || '' }, on: { input: updateFiltersLogger } }, []),
     ]),
     h('div.filters', {}, [
-      h('div.filter.from', {}, [
-        h('input', { attrs: { type: 'time', step: '1' }, on: { input: updateFrom } }, [])
+      h('div.filter.duration.dropdown', {}, [
+        h('span', {}, duration.label),
+        h('div.files.dropdown-content', {}, state.durations.map(d =>
+          h('div.click-me', { on: { click: updateDuration(d) } }, d.label)
+        ))
       ]),
-      h('div.filter.to', {}, 'To'),
       h('div.filter.files.dropdown', {}, [
         h('span', {}, 'Files'),
-        h('div.files.dropdown-content', {}, state.files.map(f =>
+        h('div.files.dropdown-content', {}, state.files.sort(by('name')).map(f =>
           h('label', {}, [
             h('input', {
-              attrs: { type: 'checkbox', checked: f.enabled },
+              attrs: { type: 'checkbox' },
+              props: { checked: f.enabled },
               on: { change: toggleFile(f) }
             }, []),
             h('span', { attrs: { title: f.path } }, f.name)
@@ -91,28 +96,32 @@ function render() {
       ]),
       h('div.filter.loggers.dropdown', {}, [
         h('span', {}, 'Loggers'),
-        h('div.loggers.dropdown-content', {}, state.loggers.map(l =>
+        h('div.loggers.dropdown-content', {}, state.loggers.sort(by('name')).map(l =>
           h('label', {}, [
             h('input', {
-              attrs: { type: 'checkbox', checked: l.enabled },
+              attrs: { type: 'checkbox' },
+              props: { checked: l.enabled },
               on: { change: toggleLogger(l) }
             }, []),
             h('span', {}, l.name)
           ])
         ))
       ]),
-      h('div.filter.levels.dropdown', {}, [
-        h('span', {}, 'Levels'),
-        h('div.levels.dropdown-content', {}, levels.map(lvl =>
-          h('label', {}, [
-            h('input', {
-              attrs: { type: 'checkbox', checked: (state.filters.levels || []).indexOf(lvl) >= 0 },
-              on: { change: updateLevel(lvl) }
-            }, []),
-            h('span', {}, lvl)
-          ])
-        ))
-      ]),
+      h('div.filter.levels', {}, state.levels.map(level =>
+        h('div.level.click-me', {
+          attrs: { title: level.name },
+          class: { disabled: !level.enabled },
+          style: { backgroundColor: level.color },
+          on: { click: toggleLevel(level) }
+        }, [])
+      )),
+      h('div.filter.user', {}, [
+        h('input', {
+          attrs: { type: 'text', placeholder: 'User' },
+          props: { value: state.filters.user || '' },
+          on: { input: updateUser }
+        }, [])
+      ])
     ])
   ]);
 }

@@ -1,6 +1,6 @@
 const h = require('snabbdom/h');
 const { state, logs } = require('../state');
-const { getClock, getFullClock, getPayload, getStyle, getFileColor, isOpen, toggle } = require('../log');
+const { getClock, getFullClock, getPayload, getClockStyle, getStyle, getFileColor, isOpen, toggle } = require('../log');
 const { render: renderPayload, close: closePayload } = require('../payload');
 
 function handleToggle(log) {
@@ -12,7 +12,7 @@ function handleToggle(log) {
 
 function renderLog(log) {
   const cells = [
-    h('td.level', { attrs: { title: getFullClock(log) } }, getClock(log)),
+    h('td.level', { attrs: { title: getFullClock(log) }, style: getClockStyle(log) }, getClock(log)),
     h('td.message', {}, [
       h('div.content', { class: { 'click-me': !!getPayload(log) }, on: { click: handleToggle(log) } }, log.message),
       h('div.payload', { style: { display: isOpen(log) ? 'block' : 'none' } }, renderPayload(getPayload(log)))

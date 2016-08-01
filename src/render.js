@@ -9,7 +9,7 @@ const patch = snabbdom.init([
 ]);
 
 const h = require('snabbdom/h');
-const container = document.getElementById('view');
+const container = document.body;
 
 const { state, logs } = require('./state');
 const { render: renderHeader } = require('./render/header');
@@ -29,7 +29,7 @@ document.addEventListener('render', function () {
 
 function render() {
   console.log('RENDER', state, JSON.parse(JSON.stringify(state)));
-  return h('div#view', {}, [
+  return h('body', { class: { 'no-scroll': state.ui.settings } }, [
     renderHeader(),
     renderLogs(),
     renderSettings()

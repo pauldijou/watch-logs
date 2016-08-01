@@ -101,6 +101,20 @@ function renderBoolean(bool, key) {
   ];
 }
 
+function renderUndefined(key) {
+  return [
+    renderKey(key),
+    h('span.payload-undefined', {}, 'undefined'),
+  ];
+}
+
+function renderNull(key) {
+  return [
+    renderKey(key),
+    h('span.payload-null', {}, 'null'),
+  ];
+}
+
 // Return array[dom]
 function renderAny(value, key = 'payload') {
   switch (getType(value)) {
@@ -110,6 +124,8 @@ function renderAny(value, key = 'payload') {
     case 'Number': return renderNumber(value, key); break;
     case 'String': return renderString(value, key); break;
     case 'Boolean': return renderBoolean(value, key); break;
+    case 'Undefined': return renderUndefined( key); break;
+    case 'Null': return renderNull(key); break;
     default: return h('span', {}, []);
   }
 }
@@ -123,6 +139,8 @@ function render(payload) {
     case 'Number': return [ h('ul', {}, [ h('li', {}, renderNumber(payload, 'payload')) ] ) ]; break;
     case 'String': return [ h('ul', {}, [ h('li', {}, renderString(payload, 'payload')) ] ) ]; break;
     case 'Boolean': return [ h('ul', {}, [ h('li', {}, renderBoolean(payload, 'payload')) ] ) ]; break;
+    case 'Undefined': return [ h('ul', {}, [ h('li', {}, renderUndefined('payload')) ] ) ]; break;
+    case 'Null': return [ h('ul', {}, [ h('li', {}, renderNull('payload')) ] ) ]; break;
     default: return [];
   };
 }

@@ -1,4 +1,4 @@
-// const { app } = require('electron').remote;
+const { app, globalShortcut } = require('electron').remote;
 const { state, logs, updateUI } = require('./src/state');
 const { init: initWatcher } = require('./src/watcher');
 const { init: initSpy } = require('./src/spy');
@@ -7,6 +7,10 @@ const { init: initSpy } = require('./src/spy');
 initWatcher();
 
 require('./src/render');
+
+// app.on('ready', function () {
+//
+// });
 
 // app.on('browser-window-blur', () => {
 //   updateUI({ lastFocus: new Date() });
