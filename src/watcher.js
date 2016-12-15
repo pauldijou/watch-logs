@@ -3,6 +3,9 @@ const chokidar = require('chokidar');
 const { when } = require('mobx');
 const { state, addFile, updateFile, removeFile, findFile, addLogs } = require('./state');
 
+// 1G
+const MAX_SIZE = 1000000000;
+
 const watcher = chokidar.watch([], {
   awaitWriteFinish: {
     stabilityThreshold: 500 // TODO : should be configurable
@@ -37,6 +40,38 @@ function parseLogs(path, from, to) {
       // WTF? The file is smaller?
       return reject(new Error('File must grow bigger and bigger'));
     }
+
+    if (to - from > MAX_SIZE) {
+      return reject(new Error('File is too big, this is not for prod logs, it will consume all your memory'))
+    }
+
+    // Stream implementation. Slower but needed for big files if necessary at some point
+    // (still not fully optimized at all)
+
+    // const logs = [];
+    // let data = '';
+    // fs.createReadStream(path, { encoding: 'utf8', start: from, end: to - from })
+    //   .on('data', d => {
+    //     // console.log('data', logs.length)
+    //     const lines = (data + d).split('\n'); // split lines
+    //     data = lines.pop();
+    //
+    //      lines.map(s => s.trim()) // remove whitespaces
+    //       .filter(s => !!s) // remove empty lines
+    //       .forEach((line, idx) => {
+    //         try {
+    //           logs.push(JSON.parse(line))
+    //         } catch (e) {
+    //           console.error('Failed to read log', line, e);
+    //         }
+    //       }); // make the magic happen
+    //   }).on('close', () => {
+    //     resolve(logs);
+    //   }).on('end', () => {
+    //     resolve(logs);
+    //   }).on('error', err => {
+    //     reject(err);
+    //   });
 
     fs.open(path, 'r', (err, fd) => {
       const buf = Buffer.alloc(to - from);
