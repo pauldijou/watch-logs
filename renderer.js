@@ -1,14 +1,34 @@
-// const { app } = require('electron').remote;
-const { state, logs, updateUI } = require('./src/state');
-const { init: initWatcher } = require('./src/watcher');
-const { init: initSpy } = require('./src/spy');
+const Elm = require('./app.js')
 
-// initSpy();
-initWatcher();
+function load(key) {
+  let value = localStorage.getItem(key)
+  if (value !== undefined) {
+    try {
+      value = JSON.parse(value)
+    } catch (e) {
+      value = null
+    }
+  }
+  if (value === undefined) {
+    value = null;
+  }
+  return value
+}
 
-require('./src/render');
+function save(key, value) {
+  localStorage.setItem(key, JSON.stringify(value))
+}
 
+const app = Elm.App.fullscreen({
+  files: load('files'),
+  filters: load('filters'),
+  configuration: load('configuration'),
+  loggers: load('loggers'),
+  levels: load('levels'),
+})
 
-// app.on('browser-window-blur', () => {
-//   updateUI({ lastFocus: new Date() });
-// });
+app.ports.save.subscribe(flags => {
+  Object.keys(flags).forEach(key => {
+    save(key, flags[key])
+  })
+})

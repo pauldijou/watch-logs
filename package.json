@@ -1,13 +1,15 @@
 {
   "name": "winston-viewer",
   "version": "0.0.1",
-  "description": "Read Winston log files like a boss",
+  "description": "Read logs files like a boss",
   "main": "main.js",
   "scripts": {
-    "start": "npm run app  | npm run styles",
-    "app": "electron main.js",
-    "less-dev": "lessc styles/styles.less styles.css --source-map --strict-math=on",
-    "styles": "npm run less-dev && chokidar 'styles/*.less' -c 'npm run less-dev'",
+    "dev": "npm run start & npm run styles & npm run build & wait",
+    "start": "electron main.js",
+    "elm-css": "elm-css src/Styles.elm --module=Styles || true",
+    "styles": "npm run elm-css && chokidar 'src/Styles.elm' -c 'npm run elm-css'",
+    "elm": "elm make src/App.elm --output app.js --yes || true",
+    "build": "npm run elm && chokidar 'src/*.elm' -c 'npm run elm'",
     "log": "node test/logs/index.js"
   },
   "repository": {
@@ -26,16 +28,16 @@
     "url": "https://github.com/pauldijou/watch-logs/issues"
   },
   "homepage": "https://github.com/pauldijou/watch-logs#readme",
+  "dependencies": {
+    "chokidar": "^1.5.2",
+    "elm": "^0.18.0",
+    "elm-css": "^0.6.0"
+  },
   "devDependencies": {
     "chokidar-cli": "^1.2.0",
     "devtron": "^1.2.0",
     "electron-prebuilt": "^1.2.0",
     "less": "^2.7.1",
     "winston": "^2.2.0"
-  },
-  "dependencies": {
-    "chokidar": "^1.5.2",
-    "mobx": "^2.4.0",
-    "snabbdom": "^0.5.0"
   }
 }
